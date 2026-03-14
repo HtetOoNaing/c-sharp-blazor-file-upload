@@ -1,61 +1,258 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-@* @inject IConfiguration Configuration *@
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
 
 <PageTitle>Upload Demo App</PageTitle>
 
-<h1>Upload Demo App</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">Upload Demo App</h1>
 
-<InputFile OnChange="OnInputFileChange" multiple />
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Upload Files</h5>
+        </div>
+        <div class="card-body">
+            <!-- File Selection - Only show if less than max files -->
+            @if (selectedFiles.Count < maxAllowedFiles)
+            {
+                <div class="mb-3">
+                    <InputFile OnChange="@OnInputFileChange" multiple />
+                    <small class="text-muted">
+                        Max file size: 3MB | Max files: @maxAllowedFiles 
+                        (You can add @(maxAllowedFiles - selectedFiles.Count) more)
+                    </small>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Maximum @maxAllowedFiles files selected. Remove some to add more.
+                </div>
+            }
 
-@if (errors.Count > 0)
-{
-    <ul class="text-danger">
-        @foreach (var error in errors)
-        {
-            <li>@error</li>
-        }
-    </ul>
-}
+            <!-- Upload Button -->
+            <button class="btn btn-primary" @onclick="UploadFiles" disabled="@(!selectedFiles.Any() || isUploading)">
+                @if (isUploading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="fas fa-upload me-2"></i>
+                Upload Files
+            </button>
+        </div>
+    </div>
+
+    <!-- File Previews -->
+    @if (selectedFiles.Any())
+    {
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Selected Files (@selectedFiles.Count / @maxAllowedFiles)</h5>
+                <button class="btn btn-sm btn-outline-danger" @onclick="ClearAllFiles">
+                    <i class="fas fa-trash me-1"></i> Clear All
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var file in selectedFiles)
+                    {
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-2 position-relative">
+                                <!-- Remove button -->
+                                <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                        @onclick="() => RemoveFile(file)"
+                                        style="z-index: 10;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                
+                                <!-- File preview -->
+                                <div class="text-center mb-2">
+                                    @if (IsImageFile(file.Name))
+                                    {
+                                        <img src="@file.PreviewUrl" class="img-fluid" style="max-height: 100px;" alt="@file.Name" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-file-alt fa-3x text-secondary"></i>
+                                    }
+                                </div>
+                                <div class="small text-truncate" title="@file.Name">@file.Name</div>
+                                <div class="small text-muted">@FormatFileSize(file.Size)</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Errors -->
+    @if (errors.Any())
+    {
+        <div class="alert alert-danger mt-4">
+            <h6>Errors:</h6>
+            <ul class="mb-0">
+                @foreach (var error in errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Success -->
+    @if (successCount > 0)
+    {
+        <div class="alert alert-success mt-4">
+            <i class="fas fa-check-circle me-2"></i>
+            Successfully uploaded @successCount file(s).
+        </div>
+    }
+</div>
 
 @code {
+    private List<FilePreview> selectedFiles = new();
+    private List<string> errors = new();
+    private int successCount = 0;
+    private bool isUploading = false;
     private long maxFileSize = 1024 * 1024 * 3; // 3 MB
     private int maxAllowedFiles = 3;
-    private List<string> errors = new List<string>();
+
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         errors.Clear();
 
-        var allFiles = e.GetMultipleFiles();
-        if (allFiles.Count() > maxAllowedFiles)
+        var newFiles = e.GetMultipleFiles();
+        
+        // Check if adding new files would exceed the limit
+        if (selectedFiles.Count + newFiles.Count > maxAllowedFiles)
         {
-            errors.Add($"Error: You can upload a maximum of {maxAllowedFiles} files.");
+            errors.Add($"Error: You can only have a maximum of {maxAllowedFiles} files. You currently have {selectedFiles.Count} and tried to add {newFiles.Count}.");
             return;
         }
 
-        foreach (var file in allFiles)
+        foreach (var file in newFiles)
         {
-            Console.WriteLine($"Received file: {file.Name}, size: {file.Size} bytes, content type: {file.ContentType}");
-            if (file.Size > maxFileSize)
+            // Check if file already exists in selection
+            if (selectedFiles.Any(f => f.Name == file.Name && f.Size == file.Size))
             {
-                errors.Add($"Error: File '{file.Name}' exceeds the maximum allowed size of {maxFileSize} bytes.");
+                errors.Add($"Error: File '{file.Name}' is already selected.");
                 continue;
             }
-            
-            try
+
+            if (file.Size > maxFileSize)
             {
-                string newFileName = $"{Guid.NewGuid()}_{file.Name}";
-                string filePath = Path.Combine("wwwroot/uploads", newFileName);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!); // Ensure the directory exists
-
-                await using var fileStream = new FileStream(filePath, FileMode.Create);
-                await file.OpenReadStream(maxFileSize).CopyToAsync(fileStream);
+                errors.Add($"Error: File '{file.Name}' exceeds 3MB limit.");
+                continue;
             }
-            catch (Exception ex)
+
+            // Create preview for images
+            string previewUrl = null;
+            if (IsImageFile(file.Name))
             {
-                errors.Add($"Error uploading file '{file.Name}': {ex.Message}");
+                using var stream = file.OpenReadStream(maxFileSize);
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+                previewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            }
+
+            selectedFiles.Add(new FilePreview
+            {
+                Name = file.Name,
+                Size = file.Size,
+                ContentType = file.ContentType,
+                PreviewUrl = previewUrl,
+                FileData = file
+            });
+        }
+    }
+
+    private void RemoveFile(FilePreview file)
+    {
+        selectedFiles.Remove(file);
+    }
+
+    private void ClearAllFiles()
+    {
+        selectedFiles.Clear();
+    }
+
+    private async Task UploadFiles()
+    {
+        if (!selectedFiles.Any()) return;
+
+        isUploading = true;
+        errors.Clear();
+        successCount = 0;
+
+        try
+        {
+            string uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            Directory.CreateDirectory(uploadFolder);
+
+            foreach (var file in selectedFiles)
+            {
+                try
+                {
+                    string newFileName = $"{Guid.NewGuid()}_{file.Name}";
+                    string filePath = Path.Combine(uploadFolder, newFileName);
+
+                    await using var stream = file.FileData.OpenReadStream(maxFileSize);
+                    await using var fileStream = new FileStream(filePath, FileMode.Create);
+                    await stream.CopyToAsync(fileStream);
+
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Error uploading '{file.Name}': {ex.Message}");
+                }
+            }
+
+            if (errors.Count == 0)
+            {
+                selectedFiles.Clear(); // Clear all files after successful upload
             }
         }
+        catch (Exception ex)
+        {
+            errors.Add($"Upload failed: {ex.Message}");
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private bool IsImageFile(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return false;
+        string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        return imageExtensions.Contains(Path.GetExtension(fileName)?.ToLower());
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private class FilePreview
+    {
+        public string? Name { get; set; }
+        public long Size { get; set; }
+        public string? ContentType { get; set; }
+        public string? PreviewUrl { get; set; }
+        public IBrowserFile? FileData { get; set; }
     }
 }
