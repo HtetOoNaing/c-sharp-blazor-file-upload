@@ -38,7 +38,7 @@ A comprehensive demonstration of file upload functionality in Blazor Server, sho
     ```
 5. **Navigate to the application**
     ```bash
-    https://localhost:5001
+    https://localhost:5151
     ```
 
 ## Project Structure

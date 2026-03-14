@@ -10,7 +10,6 @@
 
 @if (errors.Count > 0)
 {
-    <h2>Errors</h2>
     <ul class="text-danger">
         @foreach (var error in errors)
         {
@@ -27,13 +26,14 @@
     {
         errors.Clear();
 
-        if (e.GetMultipleFiles().Count() > maxAllowedFiles)
+        var allFiles = e.GetMultipleFiles();
+        if (allFiles.Count() > maxAllowedFiles)
         {
             errors.Add($"Error: You can upload a maximum of {maxAllowedFiles} files.");
             return;
         }
 
-        foreach (var file in e.GetMultipleFiles())
+        foreach (var file in allFiles)
         {
             Console.WriteLine($"Received file: {file.Name}, size: {file.Size} bytes, content type: {file.ContentType}");
             if (file.Size > maxFileSize)
