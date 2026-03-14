@@ -1,0 +1,27 @@
+# Build output
+bin/
+obj/
+publish/
+
+# IDE files
+.vs/
+.idea/
+.vscode/
+
+# User-specific files
+*.user
+appsettings.Development.json
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Uploads
+wwwroot/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
