@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "/PyiR/h4PHk=",
+  "success": true,
+  "projectFilePath": "/Users/htetoo/CSharpProjects/BlazorDemo/BlazorDemo/BlazorDemo.csproj",
+  "expectedPackageFiles": [
+    "/Users/htetoo/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.4/microsoft.aspnetcore.app.internal.assets.10.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,61 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@* @inject IConfiguration Configuration *@
+
+<PageTitle>Upload Demo App</PageTitle>
+
+<h1>Upload Demo App</h1>
+
+<InputFile OnChange="OnInputFileChange" multiple />
+
+@if (errors.Count > 0)
+{
+    <h2>Errors</h2>
+    <ul class="text-danger">
+        @foreach (var error in errors)
+        {
+            <li>@error</li>
+        }
+    </ul>
+}
+
+@code {
+    private long maxFileSize = 1024 * 1024 * 3; // 3 MB
+    private int maxAllowedFiles = 3;
+    private List<string> errors = new List<string>();
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        errors.Clear();
+
+        if (e.GetMultipleFiles().Count() > maxAllowedFiles)
+        {
+            errors.Add($"Error: You can upload a maximum of {maxAllowedFiles} files.");
+            return;
+        }
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            Console.WriteLine($"Received file: {file.Name}, size: {file.Size} bytes, content type: {file.ContentType}");
+            if (file.Size > maxFileSize)
+            {
+                errors.Add($"Error: File '{file.Name}' exceeds the maximum allowed size of {maxFileSize} bytes.");
+                continue;
+            }
+            
+            try
+            {
+                string newFileName = $"{Guid.NewGuid()}_{file.Name}";
+                string filePath = Path.Combine("wwwroot/uploads", newFileName);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!); // Ensure the directory exists
+
+                await using var fileStream = new FileStream(filePath, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fileStream);
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"Error uploading file '{file.Name}': {ex.Message}");
+            }
+        }
+    }
+}
