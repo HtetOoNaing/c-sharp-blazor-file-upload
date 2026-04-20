@@ -19,7 +19,7 @@ Rules and constraints for AI agents working on this project.
 | .NET SDK            | 10.0      | `BlazorDemo.csproj` (`net10.0`)   |
 | ASP.NET Core Blazor | 10.0      | Ships with .NET SDK               |
 | Bootstrap           | 5.3.3     | `wwwroot/lib/bootstrap/`          |
-| Font Awesome        | 6.0.0     | CDN link in `Components/App.razor`|
+| Font Awesome        | 6.0.0     | `wwwroot/lib/font-awesome/css/all.min.css` (local, was CDN)|
 
 - No additional NuGet packages. Everything is built-in to the .NET SDK.
 - Do NOT add NuGet packages without explicit approval.
@@ -83,10 +83,10 @@ dotnet build
 
 These are known and tracked. Fix only if explicitly asked.
 
-1. Upload path uses `Directory.GetCurrentDirectory()` — should use `IWebHostEnvironment.WebRootPath`
-2. SignalR `MaximumReceiveMessageSize` not configured — default 32KB may limit large uploads
-3. `string previewUrl = null;` should be `string? previewUrl = null;`
-4. Redundant `@using` directives in `Home.razor` (already in `_Imports.razor`)
-5. Font Awesome loaded from CDN — icons won't work offline
-6. `CustomerModel.UserName` hardcoded to `"admin"` — no auth system yet
+1. ~~Upload path uses `Directory.GetCurrentDirectory()` — should use `IWebHostEnvironment.WebRootPath`~~ ✅ **DONE**
+2. ~~SignalR `MaximumReceiveMessageSize` not configured — default 32KB may limit large uploads~~ ✅ **DONE** (set to 10MB)
+3. ~~`string previewUrl = null;` should be `string? previewUrl = null;`~~ ✅ **DONE**
+4. ~~Redundant `@using` directives in `Home.razor` (already in `_Imports.razor`)~~ ✅ **DONE**
+5. ~~Font Awesome loaded from CDN — icons won't work offline~~ ✅ **DONE** (now local at `wwwroot/lib/font-awesome/`)
+6. ~~`CustomerModel.UserName` hardcoded to `"admin"` — no auth system yet~~ ✅ **DONE** (now `string? UserName` with no default)
 7. README references `dotnet test` but no test project exists
