@@ -4,7 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddHubOptions(options =>
+    {
+        options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
+    });
 
 var app = builder.Build();
 

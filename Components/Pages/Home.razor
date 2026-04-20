@@ -1,8 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject IWebHostEnvironment Environment
 @using BlazorDemo.Models
-@using Microsoft.AspNetCore.Components.Forms
-@using System.IO
 
 <PageTitle>Upload Demo App</PageTitle>
 
@@ -157,7 +156,7 @@
             }
 
             // Create preview for images
-            string previewUrl = null;
+            string? previewUrl = null;
             if (IsImageFile(file.Name))
             {
                 using var stream = file.OpenReadStream(maxFileSize);
@@ -198,7 +197,7 @@
         selectedFileNames = [];
         try
         {
-            string uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            string uploadFolder = Path.Combine(Environment.WebRootPath, "uploads");
             Directory.CreateDirectory(uploadFolder);
 
             foreach (var file in selectedFiles)
