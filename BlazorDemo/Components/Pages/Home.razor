@@ -1,7 +1,12 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-@inject IWebHostEnvironment Environment
 @using BlazorDemo.Models
+@using BlazorDemo.Services
+@using Microsoft.Extensions.Options
+@inject IFileValidationService FileValidationService
+@inject IFilePreviewService FilePreviewService
+@inject IFileUploadService FileUploadService
+@inject IOptions<UploadOptions> UploadOptionsAccessor
 
 <PageTitle>Upload Demo App</PageTitle>
 
@@ -124,8 +129,10 @@
     private List<string> errors = new();
     private int successCount = 0;
     private bool isUploading = false;
-    private long maxFileSize = 1024 * 1024 * 3; // 3 MB
-    private int maxAllowedFiles = 3;
+
+    // Values loaded from appsettings.json via IOptions<UploadOptions>
+    private long maxFileSize => UploadOptionsAccessor.Value.MaxFileSize;
+    private int maxAllowedFiles => UploadOptionsAccessor.Value.MaxFileCount;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
@@ -149,30 +156,22 @@
                 continue;
             }
 
-            if (file.Size > maxFileSize)
+            if (!FileValidationService.IsWithinSizeLimit(file.Size, maxFileSize))
             {
                 errors.Add($"Error: File '{file.Name}' exceeds 3MB limit.");
                 continue;
             }
 
-            // Create preview for images
-            string? previewUrl = null;
-            if (IsImageFile(file.Name))
-            {
-                using var stream = file.OpenReadStream(maxFileSize);
-                using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
-                var bytes = memoryStream.ToArray();
-                previewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
-            }
+            // Create preview using service
+            var previewDto = await FilePreviewService.CreatePreviewAsync(file, maxFileSize);
 
             selectedFiles.Add(new FilePreview
             {
-                Name = file.Name,
-                Size = file.Size,
-                ContentType = file.ContentType,
-                PreviewUrl = previewUrl,
-                FileData = file
+                Name = previewDto.Name,
+                Size = previewDto.Size,
+                ContentType = previewDto.ContentType,
+                PreviewUrl = previewDto.PreviewUrl,
+                FileData = previewDto.FileData
             });
         }
     }
@@ -195,66 +194,34 @@
         errors.Clear();
         successCount = 0;
         selectedFileNames = [];
-        try
+
+        foreach (var file in selectedFiles)
         {
-            string uploadFolder = Path.Combine(Environment.WebRootPath, "uploads");
-            Directory.CreateDirectory(uploadFolder);
+            var result = await FileUploadService.SaveFileAsync(file.FileData!, maxFileSize);
 
-            foreach (var file in selectedFiles)
+            if (result.Success)
             {
-                try
-                {
-                    string newFileName = $"{Guid.NewGuid()}_{file.Name}";
-                    string filePath = Path.Combine(uploadFolder, newFileName);
-
-                    await using var stream = file.FileData.OpenReadStream(maxFileSize);
-                    await using var fileStream = new FileStream(filePath, FileMode.Create);
-                    await stream.CopyToAsync(fileStream);
-
-                    successCount++;
-                    selectedFileNames.Add(filePath);
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"Error uploading '{file.Name}': {ex.Message}");
-                }
+                successCount++;
+                selectedFileNames.Add(result.StoredPath!);
             }
-
-            if (errors.Count == 0)
+            else
             {
-                selectedFiles.Clear(); // Clear all files after successful upload
-                customerModel.FileNames = selectedFileNames; // Simulate saving file paths to model
+                errors.Add(result.ErrorMessage!);
             }
         }
-        catch (Exception ex)
+
+        if (errors.Count == 0)
         {
-            errors.Add($"Upload failed: {ex.Message}");
+            selectedFiles.Clear(); // Clear all files after successful upload
+            customerModel.FileNames = selectedFileNames; // Simulate saving file paths to model
         }
-        finally
-        {
-            isUploading = false;
-        }
+
+        isUploading = false;
     }
 
-    private bool IsImageFile(string fileName)
-    {
-        if (string.IsNullOrEmpty(fileName)) return false;
-        string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        return imageExtensions.Contains(Path.GetExtension(fileName)?.ToLower());
-    }
+    private bool IsImageFile(string fileName) => FileValidationService.IsImageFile(fileName);
 
-    private string FormatFileSize(long bytes)
-    {
-        string[] sizes = { "B", "KB", "MB", "GB" };
-        double len = bytes;
-        int order = 0;
-        while (len >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            len /= 1024;
-        }
-        return $"{len:0.##} {sizes[order]}";
-    }
+    private string FormatFileSize(long bytes) => FileValidationService.FormatFileSize(bytes);
 
     private class FilePreview
     {

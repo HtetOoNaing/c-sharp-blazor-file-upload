@@ -1,4 +1,6 @@
 using BlazorDemo.Components;
+using BlazorDemo.Models;
+using BlazorDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,15 @@ builder.Services.AddRazorComponents()
     {
         options.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
     });
+
+// Bind UploadOptions from appsettings.json
+builder.Services.Configure<UploadOptions>(
+    builder.Configuration.GetSection(UploadOptions.SectionName));
+
+// Register application services
+builder.Services.AddScoped<IFileValidationService, FileValidationService>();
+builder.Services.AddScoped<IFilePreviewService, FilePreviewService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 var app = builder.Build();
 
