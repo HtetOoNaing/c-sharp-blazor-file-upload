@@ -77,6 +77,21 @@ dotnet run
 dotnet build
 ```
 
+### How to Test
+```bash
+cd ../BlazorDemo.Tests  # or: dotnet test BlazorDemo.Tests/BlazorDemo.Tests.csproj
+dotnet test
+```
+
+**Test Structure:**
+- **UnitTests/** - Fast, isolated tests for models and validation logic
+  - `CustomerModelTests.cs` - Tests for CustomerModel properties
+  - `FileValidationTests.cs` - Tests for image validation, file size, file naming
+- **IntegrationTests/** - Tests that run the actual Blazor app
+  - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests using WebApplicationFactory
+
+**Current Test Count:** 42 tests (all passing)
+
 ---
 
 ## Known Issues (Do NOT Re-Report)
@@ -89,4 +104,4 @@ These are known and tracked. Fix only if explicitly asked.
 4. ~~Redundant `@using` directives in `Home.razor` (already in `_Imports.razor`)~~ ✅ **DONE**
 5. ~~Font Awesome loaded from CDN — icons won't work offline~~ ✅ **DONE** (now local at `wwwroot/lib/font-awesome/`)
 6. ~~`CustomerModel.UserName` hardcoded to `"admin"` — no auth system yet~~ ✅ **DONE** (now `string? UserName` with no default)
-7. README references `dotnet test` but no test project exists
+7. ~~README references `dotnet test` but no test project exists~~ ✅ **DONE** (BlazorDemo.Tests project created with 42 tests)
