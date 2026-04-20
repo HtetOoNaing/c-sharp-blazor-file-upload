@@ -79,7 +79,7 @@ dotnet build
 
 ### How to Test
 ```bash
-cd ../BlazorDemo.Tests  # or: dotnet test BlazorDemo.Tests/BlazorDemo.Tests.csproj
+cd BlazorDemo.Tests  # or: dotnet test BlazorDemo.Tests/BlazorDemo.Tests.csproj
 dotnet test
 ```
 
