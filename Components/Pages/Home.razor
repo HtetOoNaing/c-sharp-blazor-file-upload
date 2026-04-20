@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@using BlazorDemo.Models
 @using Microsoft.AspNetCore.Components.Forms
 @using System.IO
 
@@ -8,82 +9,90 @@
 <div class="container mt-4">
     <h1 class="mb-4">Upload Demo App</h1>
 
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Upload Files</h5>
+    <EditForm Model="customerModel" OnValidSubmit="UploadFiles">
+        <div>
+            <label for="firstName">First Name:</label>
+            <InputText id="firstName" class="form-control" @bind-Value="customerModel.FirstName" />
         </div>
-        <div class="card-body">
-            <!-- File Selection - Only show if less than max files -->
-            @if (selectedFiles.Count < maxAllowedFiles)
-            {
-                <div class="mb-3">
-                    <InputFile OnChange="@OnInputFileChange" multiple />
-                    <small class="text-muted">
-                        Max file size: 3MB | Max files: @maxAllowedFiles 
-                        (You can add @(maxAllowedFiles - selectedFiles.Count) more)
-                    </small>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info mb-3">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Maximum @maxAllowedFiles files selected. Remove some to add more.
-                </div>
-            }
-
-            <!-- File Previews -->
-            @if (selectedFiles.Any())
-            {
-                <div class="mt-8 mb-4">
-                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                        <h5 class="mb-0">Selected Files (@selectedFiles.Count / @maxAllowedFiles)</h5>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="ClearAllFiles">
-                            <i class="fas fa-trash me-1"></i> Clear All
-                        </button>
-                    </div>
-                    <div class="row">
-                        @foreach (var file in selectedFiles)
-                        {
-                            <div class="col-md-4 mb-3">
-                                <div class="border rounded p-2 position-relative">
-                                    <!-- Remove button -->
-                                    <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1 px-2 py-0" 
-                                            @onclick="() => RemoveFile(file)"
-                                            style="z-index: 10;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                    
-                                    <!-- File preview -->
-                                    <div class="text-center mb-2">
-                                        @if (IsImageFile(file.Name))
-                                        {
-                                            <img src="@file.PreviewUrl" class="img-fluid" style="max-height: 100px;" alt="@file.Name" />
-                                        }
-                                        else
-                                        {
-                                            <i class="fas fa-file-alt fa-3x text-secondary"></i>
-                                        }
-                                    </div>
-                                    <div class="small text-truncate" title="@file.Name">@file.Name</div>
-                                    <div class="small text-muted">@FormatFileSize(file.Size)</div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            <!-- Upload Button -->
-            <button class="btn btn-primary" @onclick="UploadFiles" disabled="@(!selectedFiles.Any() || isUploading)">
-                @if (isUploading)
+        <div>
+            <label for="lastName">Last Name:</label>
+            <InputText id="lastName" class="form-control" @bind-Value="customerModel.LastName" />
+        </div>
+        <div>
+            <label for="FileNames">File Names:</label>
+            <div class="form-control">
+                <!-- File Selection - Only show if less than max files -->
+                @if (selectedFiles.Count < maxAllowedFiles)
                 {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <div class="mb-3">
+                        <InputFile OnChange="@OnInputFileChange" multiple />
+                        <small class="text-muted">
+                            Max file size: 3MB | Max files: @maxAllowedFiles 
+                            (You can add @(maxAllowedFiles - selectedFiles.Count) more)
+                        </small>
+                    </div>
                 }
-                <i class="fas fa-upload me-2"></i>
-                Upload Files
-            </button>
+                else
+                {
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Maximum @maxAllowedFiles files selected. Remove some to add more.
+                    </div>
+                }
+
+                <!-- File Previews -->
+                @if (selectedFiles.Any())
+                {
+                    <div class="mt-8 mb-4">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <h5 class="mb-0">Selected Files (@selectedFiles.Count / @maxAllowedFiles)</h5>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="ClearAllFiles">
+                                <i class="fas fa-trash me-1"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="row">
+                            @foreach (var file in selectedFiles)
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-2 position-relative">
+                                        <!-- Remove button -->
+                                        <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1 px-2 py-0" 
+                                                @onclick="() => RemoveFile(file)"
+                                                style="z-index: 10;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        
+                                        <!-- File preview -->
+                                        <div class="text-center mb-2">
+                                            @if (IsImageFile(file.Name))
+                                            {
+                                                <img src="@file.PreviewUrl" class="img-fluid" style="max-height: 100px;" alt="@file.Name" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-file-alt fa-3x text-secondary"></i>
+                                            }
+                                        </div>
+                                        <div class="small text-truncate" title="@file.Name">@file.Name</div>
+                                        <div class="small text-muted">@FormatFileSize(file.Size)</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
-    </div>
+        <!-- Upload Button -->
+        <button class="btn btn-primary mt-3" type="submit" disabled="@(!selectedFiles.Any() || isUploading)">
+            @if (isUploading)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="fas fa-upload me-2"></i>
+            Upload Files
+        </button>
+    </EditForm>
 
     <!-- Errors -->
     @if (errors.Any())
@@ -110,7 +119,9 @@
 </div>
 
 @code {
+    private CustomerModel customerModel = new();
     private List<FilePreview> selectedFiles = new();
+    private List<string> selectedFileNames = new(); // Simulate existing files for duplicate check
     private List<string> errors = new();
     private int successCount = 0;
     private bool isUploading = false;
@@ -184,7 +195,7 @@
         isUploading = true;
         errors.Clear();
         successCount = 0;
-
+        selectedFileNames = [];
         try
         {
             string uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -202,6 +213,7 @@
                     await stream.CopyToAsync(fileStream);
 
                     successCount++;
+                    selectedFileNames.Add(filePath);
                 }
                 catch (Exception ex)
                 {
@@ -212,6 +224,7 @@
             if (errors.Count == 0)
             {
                 selectedFiles.Clear(); // Clear all files after successful upload
+                customerModel.FileNames = selectedFileNames; // Simulate saving file paths to model
             }
         }
         catch (Exception ex)
