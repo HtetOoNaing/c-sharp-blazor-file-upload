@@ -7,7 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace BlazorDemo.Tests.UnitTests;
+namespace BlazorDemo.Tests.UnitTests.Services;
 
 public class FileUploadServiceTests : IDisposable
 {

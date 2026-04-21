@@ -1,4 +1,4 @@
-namespace BlazorDemo.Tests.UnitTests;
+namespace BlazorDemo.Tests.UnitTests.Models;
 
 public class FileValidationTests
 {
