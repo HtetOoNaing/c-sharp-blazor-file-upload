@@ -52,10 +52,10 @@
 - [x] Test component rendering and event handling
 - [x] Mock `IJSRuntime` for JavaScript interop tests
 
-### 2.3 Integration Test Expansion
-- [ ] Add authentication/authorization flow tests
-- [ ] Test file upload end-to-end with test files
-- [ ] Add database integration tests (if adding persistence)
+### 2.3 Integration Test Expansion ✅
+- [x] Add authentication/authorization flow tests
+- [x] Test file upload end-to-end with test files
+- [x] Add database integration tests (if adding persistence)
 
 ### 2.4 Test Organization
 ```

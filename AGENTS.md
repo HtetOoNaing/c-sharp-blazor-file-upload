@@ -101,11 +101,11 @@ dotnet test
   - `HomeTests.cs` - Home page rendering with full DI setup
   - `NavMenuTests.cs` - Navigation links and brand rendering
 - **IntegrationTests/** - Tests that run the actual Blazor app
-  - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests using WebApplicationFactory
+  - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests, DI verification, config binding, E2E upload pipeline
 - **TestHelpers/** - Shared test doubles
   - `FakeBrowserFile.cs` - Fake IBrowserFile for service testing
 
-**Current Test Count:** 136 tests (all passing)
+**Current Test Count:** 148 tests (all passing)
 
 ---
 
