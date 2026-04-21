@@ -44,10 +44,16 @@ builder.Services.AddScoped<IFilePreviewService, FilePreviewService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddSingleton<IFileMetadataProtectionService, FileMetadataProtectionService>();
 
-// Database for Identity
+// Database for Identity - connection string from UserSecrets or environment variable
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' not found. " +
+        "Set it using: dotnet user-secrets set 'ConnectionStrings:DefaultConnection' 'Data Source=BlazorDemo.db'");
+}
 builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Data Source=BlazorDemo.db"));
+    options.UseSqlite(connectionString));
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>

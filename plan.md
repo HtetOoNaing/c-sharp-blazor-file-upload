@@ -94,10 +94,11 @@ BlazorDemo.Tests/
 - [x] **Implement anti-forgery token validation** via `UseAntiforgery()`
 - [x] **Add CORS configuration** "StrictPolicy" for API endpoints
 
-### 3.4 Secrets Management
-- [ ] Move secrets to `UserSecrets` (dev) or Azure Key Vault (prod)
-- [ ] Never commit connection strings, API keys, or passwords
-- [ ] Use environment variables for containerized deployments
+### 3.4 Secrets Management ✅
+- [x] **Move secrets to `UserSecrets`** (dev) - Added UserSecretsId, removed hardcoded fallback
+- [x] **Never commit connection strings** - Program.cs throws if not configured
+- [x] **Environment variables** - Supports `ConnectionStrings__DefaultConnection` for containers
+- [x] **Created SETUP.md** - Developer setup guide with secrets instructions
 
 ---
 
