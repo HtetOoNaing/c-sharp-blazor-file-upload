@@ -18,7 +18,7 @@ public class FileUploadService : IFileUploadService
         ArgumentNullException.ThrowIfNull(environment);
 
         _logger = logger;
-        _uploadDirectory = Path.Combine(environment.WebRootPath, options.Value.UploadFolder);
+        _uploadDirectory = Path.Combine(environment.ContentRootPath, options.Value.UploadFolder);
     }
 
     public string GenerateUniqueFileName(string originalFileName)

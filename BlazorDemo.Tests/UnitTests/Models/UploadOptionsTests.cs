@@ -11,7 +11,7 @@ public class UploadOptionsTests
 
         Assert.Equal(1024 * 1024 * 3, options.MaxFileSize);
         Assert.Equal(3, options.MaxFileCount);
-        Assert.Equal("uploads", options.UploadFolder);
+        Assert.Equal("App_Data/uploads", options.UploadFolder);
         Assert.Equal("UploadOptions", UploadOptions.SectionName);
     }
 

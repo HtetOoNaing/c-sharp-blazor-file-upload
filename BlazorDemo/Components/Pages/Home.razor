@@ -164,6 +164,23 @@
                 continue;
             }
 
+            if (!FileValidationService.IsImageFile(file.Name))
+            {
+                errors.Add($"Error: File '{file.Name}' is not an allowed image type.");
+                continue;
+            }
+
+            var headerBytes = new byte[8];
+            await using (var stream = file.OpenReadStream(maxFileSize))
+            {
+                await stream.ReadAsync(headerBytes);
+            }
+            if (!FileValidationService.HasValidFileSignature(headerBytes, file.Name))
+            {
+                errors.Add($"Error: File '{file.Name}' content does not match its extension — file may be spoofed.");
+                continue;
+            }
+
             // Create preview using service
             var previewDto = await FilePreviewService.CreatePreviewAsync(file, maxFileSize);
 

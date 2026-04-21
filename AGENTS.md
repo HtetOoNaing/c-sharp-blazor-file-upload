@@ -51,7 +51,7 @@ Rules and constraints for AI agents working on this project.
 - **Error handling**: Use custom exceptions (`FileUploadException`, `FileValidationException`) in services; catch them in components to show user-friendly messages.
 
 ### File Uploads
-- Upload destination: `wwwroot/uploads/`
+- Upload destination: `App_Data/uploads/` (outside wwwroot, served via `/uploads/{fileName}` endpoint)
 - Filename format: `{Guid}_{originalName}`
 - Max file size: 3 MB per file
 - Max file count: 3

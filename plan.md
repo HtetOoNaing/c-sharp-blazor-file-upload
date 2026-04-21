@@ -72,13 +72,13 @@ BlazorDemo.Tests/
 
 ## Phase 3: Security Hardening (Priority: Critical)
 
-### 3.1 File Upload Security
-- [ ] **Server-side MIME type validation** (don't trust client `ContentType`)
-- [ ] **Magic number/file signature validation** (check actual file bytes)
-- [ ] **Scan uploads with ClamAV** or similar (for production)
-- [ ] **Store files outside wwwroot** (e.g., `App_Data/uploads/`)
-- [ ] Serve files via controller/handler with authorization checks
-- [ ] **Rate limiting** on upload endpoints
+### 3.1 File Upload Security ✅
+- [x] **Server-side MIME type validation** (don't trust client `ContentType`)
+- [x] **Magic number/file signature validation** (check actual file bytes)
+- [x] **Scan uploads with ClamAV** or similar (for production)
+- [x] **Store files outside wwwroot** (e.g., `App_Data/uploads/`)
+- [x] Serve files via controller/handler with authorization checks
+- [x] **Rate limiting** on upload endpoints
 
 ### 3.2 Authentication & Authorization
 - [ ] Add ASP.NET Core Identity or OIDC (Auth0, Azure AD)

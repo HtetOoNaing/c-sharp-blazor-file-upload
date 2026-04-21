@@ -153,7 +153,7 @@ public class BlazorAppIntegrationTests : IClassFixture<WebApplicationFactory<Pro
 
         Assert.Equal(3_145_728, options.Value.MaxFileSize);
         Assert.Equal(3, options.Value.MaxFileCount);
-        Assert.Equal("uploads", options.Value.UploadFolder);
+        Assert.Equal("App_Data/uploads", options.Value.UploadFolder);
         Assert.Contains(".jpg", options.Value.AllowedExtensions);
         Assert.Contains(".png", options.Value.AllowedExtensions);
     }
@@ -222,5 +222,72 @@ public class BlazorAppIntegrationTests : IClassFixture<WebApplicationFactory<Pro
 
         var oversized = options.Value.MaxFileSize + 1;
         Assert.False(validationService.IsWithinSizeLimit(oversized, options.Value.MaxFileSize));
+    }
+
+    // --- File Serving Endpoint ---
+
+    [Fact]
+    public async Task FileServing_NonExistentFile_Returns404()
+    {
+        var response = await _client.GetAsync("/uploads/nonexistent.png");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/uploads/..%2F..%2Fappsettings.json")]
+    [InlineData("/uploads/..\\appsettings.json")]
+    public async Task FileServing_DirectoryTraversal_ReturnsBadRequest(string path)
+    {
+        var response = await _client.GetAsync(path);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.BadRequest ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task FileServing_UploadedFile_CanBeServed()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var uploadService = scope.ServiceProvider.GetRequiredService<IFileUploadService>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptions<UploadOptions>>();
+
+        var content = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var file = new FakeBrowserFile("serve-test.png", content, "image/png");
+        var result = await uploadService.SaveFileAsync(file, options.Value.MaxFileSize);
+
+        var response = await _client.GetAsync($"/uploads/{result.FileName}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("image/png", response.Content.Headers.ContentType?.MediaType);
+        var body = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal(content, body);
+
+        // Cleanup
+        if (File.Exists(result.StoredPath))
+            File.Delete(result.StoredPath);
+    }
+
+    // --- File Signature Validation via DI ---
+
+    [Fact]
+    public void E2E_Signature_ValidPng_Passes()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IFileValidationService>();
+
+        var pngHeader = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        Assert.True(service.HasValidFileSignature(pngHeader, "photo.png"));
+    }
+
+    [Fact]
+    public void E2E_Signature_SpoofedExeAsPng_Fails()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IFileValidationService>();
+
+        var exeHeader = new byte[] { 0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00 };
+        Assert.False(service.HasValidFileSignature(exeHeader, "malware.png"));
     }
 }

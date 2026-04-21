@@ -8,5 +8,5 @@ public class UploadOptions
     public string[] AllowedExtensions { get; set; } = [
         ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"
     ];
-    public string UploadFolder { get; set; } = "uploads";
+    public string UploadFolder { get; set; } = "App_Data/uploads";
 }
