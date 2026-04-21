@@ -21,7 +21,7 @@ Rules and constraints for AI agents working on this project.
 | Bootstrap           | 5.3.3     | `wwwroot/lib/bootstrap/`          |
 | Font Awesome        | 6.0.0     | `wwwroot/lib/font-awesome/css/all.min.css` (local, was CDN)|
 
-- No additional NuGet packages. Everything is built-in to the .NET SDK.
+- bUnit 2.7.2 added to test project for Blazor component testing.
 - Do NOT add NuGet packages without explicit approval.
 
 ---
@@ -91,11 +91,21 @@ dotnet test
   - `CustomerModelTests.cs` - Tests for CustomerModel properties
   - `FileValidationTests.cs` - Tests for image validation, file size, file naming
   - `FileValidationServiceTests.cs` - Tests for FileValidationService via IOptions
+  - `FileUploadServiceTests.cs` - Tests for FileUploadService with real temp directory I/O
+  - `FilePreviewServiceTests.cs` - Tests for FilePreviewService with FakeBrowserFile
+  - `UploadOptionsTests.cs` - Tests for UploadOptions defaults and custom values
   - `ExceptionTests.cs` - Tests for custom exception types
+- **ComponentTests/** - bUnit tests for Blazor components
+  - `CounterTests.cs` - Counter page rendering and click interaction
+  - `WeatherTests.cs` - Weather page loading state and data table
+  - `HomeTests.cs` - Home page rendering with full DI setup
+  - `NavMenuTests.cs` - Navigation links and brand rendering
 - **IntegrationTests/** - Tests that run the actual Blazor app
   - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests using WebApplicationFactory
+- **TestHelpers/** - Shared test doubles
+  - `FakeBrowserFile.cs` - Fake IBrowserFile for service testing
 
-**Current Test Count:** 79 tests (all passing)
+**Current Test Count:** 136 tests (all passing)
 
 ---
 
