@@ -88,11 +88,11 @@ BlazorDemo.Tests/
 - [x] **Add logout functionality** with form POST
 - [ ] Secure SignalR hubs with authorization (Phase 3.3)
 
-### 3.3 Data Protection
-- [ ] Use `IDataProtector` for sensitive temporary data
-- [ ] Encrypt file names/metadata if they contain PII
-- [ ] Implement anti-forgery token validation properly
-- [ ] Add CORS configuration if API is consumed externally
+### 3.3 Data Protection ✅
+- [x] **Use `IDataProtector`** for file metadata encryption
+- [x] **Encrypt file names/metadata** in UploadResult
+- [x] **Implement anti-forgery token validation** via `UseAntiforgery()`
+- [x] **Add CORS configuration** "StrictPolicy" for API endpoints
 
 ### 3.4 Secrets Management
 - [ ] Move secrets to `UserSecrets` (dev) or Azure Key Vault (prod)

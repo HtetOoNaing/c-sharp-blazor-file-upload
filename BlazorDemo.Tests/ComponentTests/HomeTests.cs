@@ -30,8 +30,9 @@ public class HomeTests : TestContext, IDisposable
             new FilePreviewService(
                 sp.GetRequiredService<IFileValidationService>(),
                 NullLogger<FilePreviewService>.Instance));
+        Services.AddSingleton<IFileMetadataProtectionService>(new FakeMetadataProtectionService());
         Services.AddSingleton<IFileUploadService>(
-            new FileUploadService(env, options, NullLogger<FileUploadService>.Instance));
+            new FileUploadService(env, options, NullLogger<FileUploadService>.Instance, new FakeMetadataProtectionService()));
         Services.AddLogging();
     }
 
@@ -138,5 +139,13 @@ public class HomeTests : TestContext, IDisposable
         var cut = Render<Home>();
 
         Assert.DoesNotContain("Selected Files", cut.Markup);
+    }
+
+    private class FakeMetadataProtectionService : IFileMetadataProtectionService
+    {
+        public string ProtectFileName(string originalFileName) => $"protected_{originalFileName}";
+        public string? UnprotectFileName(string protectedFileName) => protectedFileName?.Replace("protected_", "");
+        public string ProtectMetadata(string metadata) => $"protected_{metadata}";
+        public string? UnprotectMetadata(string protectedMetadata) => protectedMetadata?.Replace("protected_", "");
     }
 }

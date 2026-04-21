@@ -22,8 +22,20 @@ public class FileUploadServiceTests : IDisposable
         var env = new FakeWebHostEnvironment(_tempDir);
         var options = Options.Create(new UploadOptions { UploadFolder = "uploads" });
         var logger = NullLogger<FileUploadService>.Instance;
+        var metadataProtection = new FakeMetadataProtectionService();
 
-        _service = new FileUploadService(env, options, logger);
+        _service = new FileUploadService(env, options, logger, metadataProtection);
+    }
+
+    /// <summary>
+    /// Fake implementation for testing that just returns the original value.
+    /// </summary>
+    private class FakeMetadataProtectionService : IFileMetadataProtectionService
+    {
+        public string ProtectFileName(string originalFileName) => $"protected_{originalFileName}";
+        public string? UnprotectFileName(string protectedFileName) => protectedFileName?.Replace("protected_", "");
+        public string ProtectMetadata(string metadata) => $"protected_{metadata}";
+        public string? UnprotectMetadata(string protectedMetadata) => protectedMetadata?.Replace("protected_", "");
     }
 
     public void Dispose()

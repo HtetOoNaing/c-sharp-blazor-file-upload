@@ -58,6 +58,11 @@ Rules and constraints for AI agents working on this project.
 - File serving endpoint requires `CanUploadFiles` claim.
 - Users receive `CanUploadFiles` claim on registration.
 
+### Data Protection
+- File metadata (original file names) encrypted using `IDataProtector`.
+- CORS policy "StrictPolicy" configured for API endpoints.
+- Anti-forgery tokens enabled via `UseAntiforgery()`.
+
 ### File Uploads
 - Upload destination: `App_Data/uploads/` (outside wwwroot, served via `/uploads/{fileName}` endpoint)
 - Filename format: `{Guid}_{originalName}`

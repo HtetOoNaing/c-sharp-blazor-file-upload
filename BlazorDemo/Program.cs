@@ -11,6 +11,21 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Data Protection services
+builder.Services.AddDataProtection();
+
+// Add CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("StrictPolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:5001", "https://localhost:5000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
@@ -27,6 +42,7 @@ builder.Services.Configure<UploadOptions>(
 builder.Services.AddScoped<IFileValidationService, FileValidationService>();
 builder.Services.AddScoped<IFilePreviewService, FilePreviewService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddSingleton<IFileMetadataProtectionService, FileMetadataProtectionService>();
 
 // Database for Identity
 builder.Services.AddDbContext<IdentityDbContext>(options =>
@@ -76,6 +92,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+// Enable CORS for API endpoints
+app.UseCors("StrictPolicy");
 
 app.UseAntiforgery();
 app.UseAuthentication();

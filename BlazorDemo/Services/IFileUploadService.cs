@@ -17,6 +17,10 @@ public class UploadResult
     public string? FileName { get; set; }
     public string? StoredPath { get; set; }
     public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// Encrypted original file name for privacy protection.
+    /// </summary>
+    public string? ProtectedOriginalName { get; set; }
 }
 
 public interface IFileUploadService

@@ -9,16 +9,19 @@ public class FileUploadService : IFileUploadService
 {
     private readonly string _uploadDirectory;
     private readonly ILogger<FileUploadService> _logger;
+    private readonly IFileMetadataProtectionService _metadataProtection;
 
     public FileUploadService(
         IWebHostEnvironment environment,
         IOptions<UploadOptions> options,
-        ILogger<FileUploadService> logger)
+        ILogger<FileUploadService> logger,
+        IFileMetadataProtectionService metadataProtection)
     {
         ArgumentNullException.ThrowIfNull(environment);
 
         _logger = logger;
         _uploadDirectory = Path.Combine(environment.ContentRootPath, options.Value.UploadFolder);
+        _metadataProtection = metadataProtection;
     }
 
     public string GenerateUniqueFileName(string originalFileName)
@@ -48,11 +51,15 @@ public class FileUploadService : IFileUploadService
             _logger.LogInformation("Successfully uploaded '{FileName}' as '{StoredName}'",
                 fileData.Name, newFileName);
 
+            // Protect the original file name for privacy
+            var protectedName = _metadataProtection.ProtectFileName(fileData.Name);
+
             return new UploadResult
             {
                 Success = true,
                 FileName = newFileName,
-                StoredPath = filePath
+                StoredPath = filePath,
+                ProtectedOriginalName = protectedName
             };
         }
         catch (IOException ex)
