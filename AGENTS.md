@@ -45,7 +45,9 @@ Rules and constraints for AI agents working on this project.
 - All UI components go in `Components/`
 - Pages go in `Components/Pages/` with `@page` directive
 - Layouts go in `Components/Layout/`
-- Data models go in `Models/`
+- Data models and config classes go in `Models/`
+- Service interfaces and implementations go in `Services/`
+- Custom exception types go in `Exceptions/`
 - Static files (CSS, images, uploads) go in `wwwroot/`
 - Global `@using` statements go in `Components/_Imports.razor`
 
@@ -55,7 +57,8 @@ Rules and constraints for AI agents working on this project.
 - **File-scoped namespaces**: use `namespace Foo;` not `namespace Foo { }`
 - **Component order**: `@page` → `@rendermode` → `@using` → `@inject` → markup → `@code`
 - **Naming**: PascalCase for public members, camelCase for private fields
-- **No `Console.WriteLine`** in components — it goes to server console, not browser. Use error lists or `ILogger` if logging is needed.
+- **No `Console.WriteLine`** in components — it goes to server console, not browser. Use `ILogger<T>` for logging.
+- **Error handling**: Use custom exceptions (`FileUploadException`, `FileValidationException`) in services; catch them in components to show user-friendly messages.
 
 ### File Uploads
 - Upload destination: `wwwroot/uploads/`
@@ -84,13 +87,15 @@ dotnet test
 ```
 
 **Test Structure:**
-- **UnitTests/** - Fast, isolated tests for models and validation logic
+- **UnitTests/** - Fast, isolated tests for models, services, and validation logic
   - `CustomerModelTests.cs` - Tests for CustomerModel properties
   - `FileValidationTests.cs` - Tests for image validation, file size, file naming
+  - `FileValidationServiceTests.cs` - Tests for FileValidationService via IOptions
+  - `ExceptionTests.cs` - Tests for custom exception types
 - **IntegrationTests/** - Tests that run the actual Blazor app
   - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests using WebApplicationFactory
 
-**Current Test Count:** 42 tests (all passing)
+**Current Test Count:** 79 tests (all passing)
 
 ---
 

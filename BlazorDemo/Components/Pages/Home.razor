@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@using BlazorDemo.Exceptions
 @using BlazorDemo.Models
 @using BlazorDemo.Services
 @using Microsoft.Extensions.Options
@@ -7,6 +8,7 @@
 @inject IFilePreviewService FilePreviewService
 @inject IFileUploadService FileUploadService
 @inject IOptions<UploadOptions> UploadOptionsAccessor
+@inject ILogger<Home> Logger
 
 <PageTitle>Upload Demo App</PageTitle>
 
@@ -197,16 +199,23 @@
 
         foreach (var file in selectedFiles)
         {
-            var result = await FileUploadService.SaveFileAsync(file.FileData!, maxFileSize);
-
-            if (result.Success)
+            try
             {
+                var result = await FileUploadService.SaveFileAsync(file.FileData!, maxFileSize);
                 successCount++;
                 selectedFileNames.Add(result.StoredPath!);
             }
-            else
+            catch (FileUploadException ex)
             {
-                errors.Add(result.ErrorMessage!);
+                // User-friendly message from the custom exception
+                errors.Add(ex.Message);
+                Logger.LogWarning(ex, "Upload failed for '{FileName}'", ex.FileName);
+            }
+            catch (Exception ex)
+            {
+                // Catch-all safety net for truly unexpected errors
+                errors.Add($"Unexpected error with '{file.Name}'. Please try again.");
+                Logger.LogError(ex, "Unexpected error uploading '{FileName}'", file.Name);
             }
         }
 

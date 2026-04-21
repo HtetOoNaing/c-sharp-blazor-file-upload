@@ -3,27 +3,36 @@ using Microsoft.Extensions.Options;
 
 namespace BlazorDemo.Services;
 
-/// <summary>
-/// Implementation of file validation logic.
-/// Reads allowed extensions from UploadOptions in appsettings.json.
-/// </summary>
 public class FileValidationService : IFileValidationService
 {
     private readonly string[] _allowedExtensions;
+    private readonly ILogger<FileValidationService> _logger;
     private static readonly string[] SizeSuffixes = { "B", "KB", "MB", "GB" };
 
-    public FileValidationService(IOptions<UploadOptions> options)
+    public FileValidationService(IOptions<UploadOptions> options, ILogger<FileValidationService> logger)
     {
         _allowedExtensions = options.Value.AllowedExtensions;
+        _logger = logger;
     }
 
     public bool IsImageFile(string? fileName)
     {
         if (string.IsNullOrEmpty(fileName))
+        {
+            _logger.LogDebug("IsImageFile called with null/empty filename");
             return false;
+        }
 
         var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
-        return _allowedExtensions.Contains(extension);
+        var isValid = _allowedExtensions.Contains(extension);
+
+        if (!isValid)
+        {
+            _logger.LogDebug("File '{FileName}' has extension '{Extension}' which is not in allowed list",
+                fileName, extension);
+        }
+
+        return isValid;
     }
 
     public string FormatFileSize(long bytes)
@@ -50,7 +59,6 @@ public class FileValidationService : IFileValidationService
 
     public string[] GetAllowedExtensions()
     {
-        // Return a copy to prevent external modification
         return _allowedExtensions.ToArray();
     }
 }

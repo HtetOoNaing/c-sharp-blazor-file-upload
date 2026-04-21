@@ -1,22 +1,23 @@
+using BlazorDemo.Exceptions;
 using BlazorDemo.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
 
 namespace BlazorDemo.Services;
 
-/// <summary>
-/// Handles server-side file storage operations.
-/// Reads upload folder from UploadOptions in appsettings.json.
-/// </summary>
 public class FileUploadService : IFileUploadService
 {
     private readonly string _uploadDirectory;
+    private readonly ILogger<FileUploadService> _logger;
 
-    public FileUploadService(IWebHostEnvironment environment, IOptions<UploadOptions> options)
+    public FileUploadService(
+        IWebHostEnvironment environment,
+        IOptions<UploadOptions> options,
+        ILogger<FileUploadService> logger)
     {
         ArgumentNullException.ThrowIfNull(environment);
 
-        // Upload folder name comes from config (default: "uploads")
+        _logger = logger;
         _uploadDirectory = Path.Combine(environment.WebRootPath, options.Value.UploadFolder);
     }
 
@@ -30,6 +31,9 @@ public class FileUploadService : IFileUploadService
     {
         ArgumentNullException.ThrowIfNull(fileData);
 
+        _logger.LogInformation("Starting upload for file '{FileName}' ({FileSize} bytes)",
+            fileData.Name, fileData.Size);
+
         try
         {
             EnsureUploadDirectoryExists();
@@ -41,6 +45,9 @@ public class FileUploadService : IFileUploadService
             await using var fileStream = new FileStream(filePath, FileMode.Create);
             await stream.CopyToAsync(fileStream);
 
+            _logger.LogInformation("Successfully uploaded '{FileName}' as '{StoredName}'",
+                fileData.Name, newFileName);
+
             return new UploadResult
             {
                 Success = true,
@@ -48,13 +55,24 @@ public class FileUploadService : IFileUploadService
                 StoredPath = filePath
             };
         }
+        catch (IOException ex)
+        {
+            _logger.LogError(ex, "Disk I/O error uploading '{FileName}' to '{Directory}'",
+                fileData.Name, _uploadDirectory);
+
+            throw new FileUploadException(
+                $"Failed to save '{fileData.Name}'. Please try again.",
+                fileData.Name,
+                ex);
+        }
         catch (Exception ex)
         {
-            return new UploadResult
-            {
-                Success = false,
-                ErrorMessage = $"Error uploading '{fileData.Name}': {ex.Message}"
-            };
+            _logger.LogError(ex, "Unexpected error uploading '{FileName}'", fileData.Name);
+
+            throw new FileUploadException(
+                $"An unexpected error occurred uploading '{fileData.Name}'.",
+                fileData.Name,
+                ex);
         }
     }
 
@@ -67,6 +85,7 @@ public class FileUploadService : IFileUploadService
     {
         if (!Directory.Exists(_uploadDirectory))
         {
+            _logger.LogInformation("Creating upload directory: {Directory}", _uploadDirectory);
             Directory.CreateDirectory(_uploadDirectory);
         }
     }

@@ -1,5 +1,7 @@
 using BlazorDemo.Models;
 using BlazorDemo.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace BlazorDemo.Tests.UnitTests;
@@ -12,7 +14,8 @@ public class FileValidationServiceTests
     {
         // Create IOptions<UploadOptions> with default values (same as appsettings.json)
         var options = Options.Create(new UploadOptions());
-        _service = new FileValidationService(options);
+        var logger = NullLogger<FileValidationService>.Instance;
+        _service = new FileValidationService(options, logger);
     }
 
     [Theory]
