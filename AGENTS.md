@@ -4,24 +4,15 @@ Rules and constraints for AI agents working on this project.
 
 ---
 
-## Project Identity
-
-- **Name**: BlazorDemo
-- **Type**: Blazor Web App (Interactive Server)
-- **Git root**: This folder (`BlazorDemo/`) — there is no outer solution folder in the repo
-
----
-
 ## Pinned Versions — Do NOT Upgrade Without Asking
 
-| Dependency          | Version   | Location                          |
-| ------------------- | --------- | --------------------------------- |
-| .NET SDK            | 10.0      | `BlazorDemo.csproj` (`net10.0`)   |
-| ASP.NET Core Blazor | 10.0      | Ships with .NET SDK               |
-| Bootstrap           | 5.3.3     | `wwwroot/lib/bootstrap/`          |
-| Font Awesome        | 6.0.0     | `wwwroot/lib/font-awesome/css/all.min.css` (local, was CDN)|
+| Dependency          | Version   |
+| ------------------- | --------- |
+| .NET SDK            | 10.0      |
+| ASP.NET Core Blazor | 10.0      |
+| Bootstrap           | 5.3.3     |
+| Font Awesome        | 6.0.0     |
 
-- bUnit 2.7.2 added to test project for Blazor component testing.
 - Do NOT add NuGet packages without explicit approval.
 
 ---
@@ -36,20 +27,19 @@ Rules and constraints for AI agents working on this project.
 - Prefer minimal, targeted fixes over large rewrites.
 
 ### Framework & Rendering
-- Use **`@rendermode InteractiveServer`** on any page that needs interactivity (event handlers, forms, etc.).
-- Pages that are display-only (e.g., Error, NotFound) stay **static** — no render mode directive.
+- Use **`@rendermode InteractiveServer`** on any page that needs interactivity.
+- Pages that are display-only (e.g., Error, NotFound) stay **static**.
 - Weather page uses **`[StreamRendering]`** — keep it that way.
 
 ### File Structure
 - Entry point: `Program.cs`
-- All UI components go in `Components/`
-- Pages go in `Components/Pages/` with `@page` directive
-- Layouts go in `Components/Layout/`
-- Data models and config classes go in `Models/`
-- Service interfaces and implementations go in `Services/`
-- Custom exception types go in `Exceptions/`
-- Static files (CSS, images, uploads) go in `wwwroot/`
-- Global `@using` statements go in `Components/_Imports.razor`
+- Pages: `Components/Pages/` with `@page` directive
+- Layouts: `Components/Layout/`
+- Models and config classes: `Models/`
+- Services: `Services/`
+- Custom exceptions: `Exceptions/`
+- Static files: `wwwroot/`
+- Global usings: `Components/_Imports.razor`
 
 ### Coding Conventions
 - **Nullable reference types**: enabled — use `string?` not `string` for nullable
@@ -57,7 +47,7 @@ Rules and constraints for AI agents working on this project.
 - **File-scoped namespaces**: use `namespace Foo;` not `namespace Foo { }`
 - **Component order**: `@page` → `@rendermode` → `@using` → `@inject` → markup → `@code`
 - **Naming**: PascalCase for public members, camelCase for private fields
-- **No `Console.WriteLine`** in components — it goes to server console, not browser. Use `ILogger<T>` for logging.
+- **No `Console.WriteLine`** in components — use `ILogger<T>` for logging.
 - **Error handling**: Use custom exceptions (`FileUploadException`, `FileValidationException`) in services; catch them in components to show user-friendly messages.
 
 ### File Uploads
@@ -67,56 +57,7 @@ Rules and constraints for AI agents working on this project.
 - Max file count: 3
 - Allowed image extensions: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.webp`
 
-### How to Run
-```bash
-# From this project folder:
-dotnet run
-
-# Then open: https://localhost:7250 or http://localhost:5151
-```
-
-### How to Build
-```bash
-dotnet build
-```
-
-### How to Test
-```bash
-cd BlazorDemo.Tests  # or: dotnet test BlazorDemo.Tests/BlazorDemo.Tests.csproj
-dotnet test
-```
-
-**Test Structure:**
-- **UnitTests/** - Fast, isolated tests for models, services, and validation logic
-  - `CustomerModelTests.cs` - Tests for CustomerModel properties
-  - `FileValidationTests.cs` - Tests for image validation, file size, file naming
-  - `FileValidationServiceTests.cs` - Tests for FileValidationService via IOptions
-  - `FileUploadServiceTests.cs` - Tests for FileUploadService with real temp directory I/O
-  - `FilePreviewServiceTests.cs` - Tests for FilePreviewService with FakeBrowserFile
-  - `UploadOptionsTests.cs` - Tests for UploadOptions defaults and custom values
-  - `ExceptionTests.cs` - Tests for custom exception types
-- **ComponentTests/** - bUnit tests for Blazor components
-  - `CounterTests.cs` - Counter page rendering and click interaction
-  - `WeatherTests.cs` - Weather page loading state and data table
-  - `HomeTests.cs` - Home page rendering with full DI setup
-  - `NavMenuTests.cs` - Navigation links and brand rendering
-- **IntegrationTests/** - Tests that run the actual Blazor app
-  - `BlazorAppIntegrationTests.cs` - HTTP endpoint tests, DI verification, config binding, E2E upload pipeline
-- **TestHelpers/** - Shared test doubles
-  - `FakeBrowserFile.cs` - Fake IBrowserFile for service testing
-
-**Current Test Count:** 148 tests (all passing)
-
----
-
-## Known Issues (Do NOT Re-Report)
-
-These are known and tracked. Fix only if explicitly asked.
-
-1. ~~Upload path uses `Directory.GetCurrentDirectory()` — should use `IWebHostEnvironment.WebRootPath`~~ ✅ **DONE**
-2. ~~SignalR `MaximumReceiveMessageSize` not configured — default 32KB may limit large uploads~~ ✅ **DONE** (set to 10MB)
-3. ~~`string previewUrl = null;` should be `string? previewUrl = null;`~~ ✅ **DONE**
-4. ~~Redundant `@using` directives in `Home.razor` (already in `_Imports.razor`)~~ ✅ **DONE**
-5. ~~Font Awesome loaded from CDN — icons won't work offline~~ ✅ **DONE** (now local at `wwwroot/lib/font-awesome/`)
-6. ~~`CustomerModel.UserName` hardcoded to `"admin"` — no auth system yet~~ ✅ **DONE** (now `string? UserName` with no default)
-7. ~~README references `dotnet test` but no test project exists~~ ✅ **DONE** (BlazorDemo.Tests project created with 42 tests)
+### Commands
+- **Run**: `dotnet run` from `BlazorDemo/`
+- **Build**: `dotnet build` from `BlazorDemo/`
+- **Test**: `dotnet test` from `BlazorDemo.Tests/`
