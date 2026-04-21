@@ -12,8 +12,10 @@ Rules and constraints for AI agents working on this project.
 | ASP.NET Core Blazor | 10.0      |
 | Bootstrap           | 5.3.3     |
 | Font Awesome        | 6.0.0     |
+| Entity Framework Core | 8.0.4   |
 
 - Do NOT add NuGet packages without explicit approval.
+- Do NOT modify the authentication flow without explicit approval.
 
 ---
 
@@ -49,6 +51,12 @@ Rules and constraints for AI agents working on this project.
 - **Naming**: PascalCase for public members, camelCase for private fields
 - **No `Console.WriteLine`** in components — use `ILogger<T>` for logging.
 - **Error handling**: Use custom exceptions (`FileUploadException`, `FileValidationException`) in services; catch them in components to show user-friendly messages.
+
+### Authentication
+- Home page requires `[Authorize(Policy = "CanUploadFiles")]` claim.
+- Login/Register pages are accessible anonymously.
+- File serving endpoint requires `CanUploadFiles` claim.
+- Users receive `CanUploadFiles` claim on registration.
 
 ### File Uploads
 - Upload destination: `App_Data/uploads/` (outside wwwroot, served via `/uploads/{fileName}` endpoint)

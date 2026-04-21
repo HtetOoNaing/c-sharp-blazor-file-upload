@@ -80,11 +80,13 @@ BlazorDemo.Tests/
 - [x] Serve files via controller/handler with authorization checks
 - [x] **Rate limiting** on upload endpoints
 
-### 3.2 Authentication & Authorization
-- [ ] Add ASP.NET Core Identity or OIDC (Auth0, Azure AD)
-- [ ] Implement `[Authorize]` attributes on sensitive pages
-- [ ] Add claims-based authorization (e.g., "CanUploadFiles")
-- [ ] Secure SignalR hubs with authorization
+### 3.2 Authentication & Authorization ✅
+- [x] **Add ASP.NET Core Identity** with SQLite database
+- [x] **Implement `[Authorize]`** attributes on Home page
+- [x] **Add claims-based authorization** ("CanUploadFiles" policy)
+- [x] **Create Login/Register pages** with form validation
+- [x] **Add logout functionality** with form POST
+- [ ] Secure SignalR hubs with authorization (Phase 3.3)
 
 ### 3.3 Data Protection
 - [ ] Use `IDataProtector` for sensitive temporary data

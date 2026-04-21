@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = "CanUploadFiles")]
 @using BlazorDemo.Exceptions
 @using BlazorDemo.Models
 @using BlazorDemo.Services
